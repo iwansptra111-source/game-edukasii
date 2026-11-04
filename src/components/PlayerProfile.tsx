@@ -6,7 +6,7 @@ function PlayerProfile() {
       </div>
       <div className="player-profile__details">
         <span className="player-profile__eyebrow">Siswa</span>
-        <strong>Rizki</strong>
+        <strong>riski</strong>
         <div
           className="player-profile__progress"
           role="progressbar"

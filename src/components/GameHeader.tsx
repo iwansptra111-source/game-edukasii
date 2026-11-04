@@ -3,13 +3,13 @@ import Icon from './Icon'
 import PlayerProfile from './PlayerProfile'
 import ResourceCounter from './ResourceCounter'
 
-function GameHeader() {
+function GameHeader({ starCount = 120 }: { starCount?: number }) {
   return (
     <header className="game-header">
       <PlayerProfile />
       <div className="game-header__right">
         <div className="game-header__resources" aria-label="Sumber daya">
-          <ResourceCounter icon="star" label="bintang" value={120} />
+          <ResourceCounter icon="star" label="bintang" value={starCount} />
           <ResourceCounter icon="gem" label="berlian" value={45} />
           <span className="game-header__settings" aria-label="Pengaturan">
             <Icon name="settings" />
@@ -22,3 +22,4 @@ function GameHeader() {
 }
 
 export default GameHeader
+
