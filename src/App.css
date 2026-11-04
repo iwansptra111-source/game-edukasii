@@ -780,6 +780,24 @@
   }
 }
 
+/* Vertical island route: the camera follows each jump toward the summit. */
+.level-game__arena--climb::after { display:none; }
+.level-game__climb-world { position:absolute; z-index:2; inset:0; overflow:hidden; }
+.level-game__ledge { position:absolute; width:31%; height:clamp(42px,8svh,66px); border-radius:45% 38% 18% 15%; background:linear-gradient(180deg,#a9794e 0%,#79513d 52%,#543e37 100%); box-shadow:0 8px 0 #443931a8,0 13px 18px #17475c45; transform:translate(-50%,-50%); transition:left .26s ease,top .42s cubic-bezier(.2,.7,.25,1); clip-path:polygon(0 20%,17% 9%,36% 15%,52% 3%,76% 12%,100% 0,94% 100%,8% 94%); }
+.level-game__ledge::before { position:absolute; top:0; right:0; left:0; height:26%; border-radius:45% 45% 15% 15%; background:linear-gradient(180deg,#d5f77c,#75ce4d 75%,#4eaa42); content:''; }
+.level-game__ledge.is-current { filter:drop-shadow(0 0 8px #fff6a8); }
+.level-game__climb-world .level-game__obstacle { top:auto; bottom:auto; transition:left .25s ease,top .42s cubic-bezier(.2,.7,.25,1); animation:obstacle-bob 1s ease-in-out infinite alternate; }
+.level-game__climb-world .level-game__obstacle--triangle { transform:translate(-50%,-50%); }
+.level-game__climb-world .level-game__obstacle--square,.level-game__climb-world .level-game__obstacle--circle { transform:translate(-50%,-50%); }
+.level-game__climb-world .level-game__obstacle--square { bottom:auto; }
+.level-game__climb-world .level-game__obstacle--circle { bottom:auto; }
+.level-game__climb-world .level-game__collectible,.level-game__climb-world .level-game__coin,.level-game__climb-world .level-game__finish--climb { top:auto; bottom:auto; transition:left .25s ease,top .42s cubic-bezier(.2,.7,.25,1); }
+.level-game__climb-world .level-game__collectible { transform:translate(-50%,-50%); }
+.level-game__climb-world .level-game__coin { transform:translate(-50%,-50%); }
+.level-game__climb-world .level-game__finish--climb { transform:translate(-50%,-50%); }
+.level-game__arena--climb .level-game__runner { z-index:5; bottom:24%; transition:left .24s cubic-bezier(.2,.65,.25,1); }
+.level-game__arena--climb .level-game__runner-shadow { z-index:4; bottom:22%; }
+
 /* ===== Peta petualangan ===== */
 .game-home--map {
   background: linear-gradient(180deg, #50baff, #bceeff 68%, #e5f7df);
@@ -790,9 +808,9 @@
   display: flex;
   min-height: 0;
   flex: 1 1 auto;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: center;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   scrollbar-width: none;
 }
@@ -802,14 +820,16 @@
 .adventure-map__artwork {
   position: relative;
   width: min(100%, 600px);
-  flex: 0 0 auto;
+  height: 100%;
+  flex: 1 1 auto;
   line-height: 0;
 }
 
 .adventure-map__artwork > img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: fill;
 }
 
 .adventure-map__back {
@@ -871,8 +891,8 @@
 }
 
 @media (min-width: 600px) {
-  .adventure-map { padding-bottom: 10px; }
-  .adventure-map__artwork { width: min(100%, 560px); }
+  .adventure-map { padding-bottom: 0; }
+  .adventure-map__artwork { width: min(100%, 560px); height: 100%; }
 }
 
 /* ===== Interaksi seluruh titik level dan kuis ===== */
@@ -1358,3 +1378,64 @@
   .level-game__illustration-card { min-height:160px; }
   .level-game--quiz .level-game__answer { min-height:52px; font-size:16px; }
 }
+
+/* Cross-fade the two supplied stride poses to soften the walk cycle. */
+.level-game__runner.is-walking { animation:runner-walk-smooth .52s ease-in-out infinite; }
+.level-game__arena--climb .level-game__runner { transition:left .42s cubic-bezier(.2,.65,.25,1),bottom .24s ease; }
+.level-game__player--base { transition:opacity .14s ease; }
+.level-game__player--base.is-hidden { opacity:0; }
+.level-game__walk-sprites { position:absolute; inset:0; opacity:0; pointer-events:none; transition:opacity .14s ease; }
+.level-game__walk-sprites.is-active { opacity:1; }
+.level-game__walk-frame { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:contain; opacity:0; filter:drop-shadow(0 5px 3px #11364d55); transition:opacity .16s ease; }
+.level-game__walk-frame.is-visible { opacity:1; }
+.level-game__runner.faces-left .level-game__walk-frame { transform:scaleX(-1); }
+@keyframes runner-walk-smooth {
+  0%,100% { transform:translate(-50%,0) rotate(-1deg) scale(1,1); }
+  25% { transform:translate(-50%,-3px) rotate(1deg) scale(.99,1.015); }
+  50% { transform:translate(-50%,0) rotate(1deg) scale(1.01,.99); }
+  75% { transform:translate(-50%,-2px) rotate(-1deg) scale(.99,1.01); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .level-game__runner.is-walking { animation:none; }
+  .level-game__walk-sprites,.level-game__walk-frame,.level-game__player--base { transition:none; }
+}
+
+/* Use the supplied high-resolution floating-island artwork for the route. */
+.level-game__ledge { width:26%; height:clamp(68px,11svh,94px); overflow:visible; border:0; border-radius:0; background:none; box-shadow:none; clip-path:none; filter:drop-shadow(0 6px 5px #153e4d45); }
+.level-game__ledge::before { display:none; }
+.level-game__ledge img { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:fill; }
+.level-game__ledge.is-current { filter:drop-shadow(0 0 7px #e9ffad) drop-shadow(0 8px 7px #153e4d55); }
+.level-game__climb-world .level-game__collectible { top:auto; bottom:auto; width:31px; height:31px; animation:none; transform:translate(-50%,-50%); }
+.level-game__climb-world .level-game__coin { top:auto; bottom:auto; width:25px; height:25px; animation:none; transform:translate(-50%,-50%); }
+.level-game--explore .level-game__game-message { right:auto; bottom:92px; left:50%; width:max-content; max-width:calc(100% - 24px); min-height:0; padding:6px 11px; border:1px solid #ffffff70; border-radius:12px; background:#104a72d9; color:#fff; line-height:1.3; text-shadow:0 1px 2px #123c73; transform:translateX(-50%); }
+@media(max-height:700px) { .level-game--explore .level-game__game-message { bottom:86px; } }
+.level-game__runner.is-falling { z-index:6; animation:runner-fall .68s cubic-bezier(.42,.02,.92,.42) forwards; }
+.level-game__runner.is-falling .level-game__player { filter:drop-shadow(0 3px 2px #11364d22); }
+.level-game__runner-shadow.is-jumping { transition:opacity .18s ease,width .18s ease; }
+.level-game__runner-shadow.is-falling { opacity:0; }
+.level-game__runner:not(.is-walking):not(.is-jumping):not(.is-falling) { animation:runner-idle-alive 2.3s ease-in-out infinite; }
+.level-game__runner.is-walking { animation:runner-walk-smooth .5s cubic-bezier(.45,.05,.55,.95) infinite; }
+.level-game__runner.is-jumping { animation:runner-jump 760ms cubic-bezier(.34,.02,.25,1) both; }
+.level-game__runner-shadow:not(.is-jumping):not(.is-falling) { animation:shadow-breathe 2.3s ease-in-out infinite; }
+@keyframes runner-idle-alive {
+  0%,100% { transform:translate(-50%,0) rotate(-.5deg) scale(1,1); }
+  24% { transform:translate(-50%,-2px) rotate(.7deg) scale(1.005,.995); }
+  50% { transform:translate(-50%,-4px) rotate(0) scale(1,.99); }
+  76% { transform:translate(-50%,-2px) rotate(-.7deg) scale(.995,1.005); }
+}
+@keyframes shadow-breathe {
+  0%,100% { transform:translateX(-50%) scaleX(1); opacity:.9; }
+  50% { transform:translateX(-50%) scaleX(.86); opacity:.68; }
+}
+@keyframes runner-fall {
+  0% { transform:translate(-50%,0) rotate(0) scale(1); opacity:1; }
+  20% { transform:translate(-50%,10px) rotate(6deg) scale(.98); opacity:1; }
+  100% { transform:translate(-48%,210px) rotate(22deg) scale(.82); opacity:.12; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .level-game__runner:not(.is-walking):not(.is-jumping):not(.is-falling),.level-game__runner-shadow { animation:none; }
+  .level-game__runner.is-walking,.level-game__runner.is-jumping { animation:none; }
+}
+.level-game--result { isolation:isolate; }
+.level-game--result::before { position:fixed; z-index:0; inset:0; background-color:#8edcf6; background-image:linear-gradient(180deg,#66c9f22e 0%,#e9f9ff45 73%,#ccecbf55 100%),url('./assets/game-world.png'); background-position:center,center 68%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
+.level-game--result > .level-game__header,.level-game--result > .level-game__result { position:relative; z-index:1; }

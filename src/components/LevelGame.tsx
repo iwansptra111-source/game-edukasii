@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import explorerImage from '../assets/game-explorer.png'
+import walkFrameOne from '../assets/runner-frame-1.png'
+import walkFrameTwo from '../assets/runner-frame-2.png'
+import jumpFrame from '../assets/runner-frame-3.png'
+import floatingIsland from '../assets/floating-island-1.png'
 
 type Question = {
   topic: string
@@ -53,13 +57,16 @@ const questions: Question[] = [
 function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   const [stage, setStage] = useState<'details' | 'explore' | 'quiz' | 'result'>('details')
   const [paused, setPaused] = useState(false)
-  const [playerX, setPlayerX] = useState(7)
+  const [playerX, setPlayerX] = useState(18)
+  const [climbStep, setClimbStep] = useState(0)
   const [jumping, setJumping] = useState(false)
+  const [falling, setFalling] = useState(false)
   const [walking, setWalking] = useState(false)
+  const [walkFrame, setWalkFrame] = useState(0)
   const [facing, setFacing] = useState<1 | -1>(1)
   const walkTimer = useRef<number | null>(null)
   const jumpTimer = useRef<number | null>(null)
-  const [lives, setLives] = useState(3)
+  const fallTimer = useRef<number | null>(null)
   const [collected, setCollected] = useState<number[]>([])
   const [collectedCoins, setCollectedCoins] = useState<number[]>([])
   const [gameMessage, setGameMessage] = useState('')
@@ -78,64 +85,90 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   const isCorrect = selected === question.answer
   const earnedStars = points >= 500 ? 3 : points >= 300 ? 2 : 1
   const earnedCoins = 40 + collected.length * 10 + collectedCoins.length * 5
-  const obstacles = [{ position: 34, shape: 'triangle' }, { position: 62, shape: 'square' }, { position: 84, shape: 'circle' }] as const
-  const collectibles = [18, 49, 75]
-  const coinPositions = [42, 56, 69]
+  const platforms = [{ x: 18 }, { x: 55 }, { x: 79 }, { x: 42 }, { x: 73 }, { x: 29 }]
+  const shapeSteps = [1, 3, 4]
+  const coinSteps = [1, 2, 5]
+
+  useEffect(() => {
+    if (!walking || jumping) return
+    const frameTimer = window.setInterval(() => setWalkFrame((frame) => (frame + 1) % 2), 180)
+    return () => window.clearInterval(frameTimer)
+  }, [walking, jumping])
 
   function startWalkingAnimation() {
-    if (jumping) return
+    if (jumping || falling) return
     setWalking(true)
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
-    walkTimer.current = window.setTimeout(() => setWalking(false), 380)
+    walkTimer.current = window.setTimeout(() => setWalking(false), 520)
+  }
+
+  function fallFromPlatform() {
+    if (falling) return
+    setWalking(false)
+    setJumping(false)
+    setFalling(true)
+    setGameMessage('Ups, kamu terjatuh!')
+    if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
+    if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
+    if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
+    fallTimer.current = window.setTimeout(() => {
+      setFalling(false)
+      setPlayerX(platforms[climbStep].x)
+      setGameMessage('Kamu kembali ke pulau terakhir. Coba lompat lagi!')
+    }, 680)
   }
 
   function movePlayer(direction: -1 | 1) {
-    if (stage !== 'explore' || paused) return
+    if (stage !== 'explore' || paused || falling || jumping) return
     setFacing(direction)
-    const next = Math.min(94, Math.max(5, playerX + direction * 7))
-    const obstacle = direction > 0 ? obstacles.find(({ position }) => playerX < position && next >= position) : undefined
-    if (obstacle !== undefined && !jumping) {
-      if (lives <= 1) {
-        setLives(3)
-        setPlayerX(7)
-        setGameMessage('Kembali ke checkpoint. Coba lompat dengan tombol ↑!')
-      } else {
-        setLives((count) => count - 1)
-        setPlayerX(Math.max(5, obstacle.position - 9))
-        setGameMessage('Ada rintangan! Lompat dengan tombol ↑ untuk melewatinya.')
-      }
+    const nextX = playerX + direction * 7
+    if (nextX < 5 || nextX > 95) {
+      setPlayerX(direction < 0 ? 4 : 96)
+      fallFromPlatform()
       return
     }
-
+    setPlayerX(nextX)
     if (!jumping) startWalkingAnimation()
-    const found = collectibles.findIndex((point, index) => !collected.includes(index) && playerX < point + 4 && next >= point - 4)
-    const foundCoin = coinPositions.findIndex((point, index) => !collectedCoins.includes(index) && playerX < point + 4 && next >= point - 4)
-    setPlayerX(next)
-    if (found !== -1) {
-      setCollected((items) => items.includes(found) ? items : [...items, found])
-      setPoints((score) => score + 10)
-      setGameMessage('Bentuk ditemukan! +10 poin')
-    } else if (foundCoin !== -1) {
-      setCollectedCoins((items) => items.includes(foundCoin) ? items : [...items, foundCoin])
-      setPoints((score) => score + 5)
-      setGameMessage('Koin ditemukan! +5 poin')
-    } else {
-      setGameMessage('')
-    }
+    setGameMessage('Tekan lompat dari mana saja untuk menuju pulau berikutnya!')
   }
 
   function jump() {
-    if (stage !== 'explore' || paused || jumping) return
+    if (stage !== 'explore' || paused || jumping || falling) return
+    const nextStep = climbStep + 1
+    const target = platforms[nextStep]
+    if (!target) return
     setWalking(false)
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
     setJumping(true)
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
-    jumpTimer.current = window.setTimeout(() => setJumping(false), 680)
+    if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
+    jumpTimer.current = window.setTimeout(() => setJumping(false), 760)
+    setPlayerX(target.x)
+    setClimbStep(nextStep)
+
+    const shapeIndex = shapeSteps.indexOf(nextStep)
+    if (shapeIndex !== -1 && !collected.includes(shapeIndex)) {
+      setCollected((items) => items.includes(shapeIndex) ? items : [...items, shapeIndex])
+      setPoints((score) => score + 10)
+      setGameMessage('Pulau berikutnya! Bentuk terkumpul +10')
+    } else {
+      setGameMessage('Lompatan bagus! Terus naik ke puncak.')
+    }
+    const coinIndex = coinSteps.indexOf(nextStep)
+    if (coinIndex !== -1 && !collectedCoins.includes(coinIndex)) {
+      setCollectedCoins((items) => items.includes(coinIndex) ? items : [...items, coinIndex])
+      setPoints((score) => score + 5)
+      setGameMessage('Koin melayang didapat! +5 poin')
+    }
+
+    if (nextStep === platforms.length - 1) {
+      window.setTimeout(() => setStage('quiz'), 790)
+    }
   }
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (stage !== 'explore' || paused || event.repeat) return
+      if (stage !== 'explore' || paused || falling || event.repeat) return
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', ' '].includes(event.key)) event.preventDefault()
       if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') movePlayer(-1)
       if (event.key === 'ArrowRight' || event.key.toLowerCase() === 'd') movePlayer(1)
@@ -148,6 +181,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   useEffect(() => () => {
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
+    if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
   }, [])
 
   function answerQuestion(option: string) {
@@ -175,13 +209,15 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   function restart() {
     setStage('details')
     setPaused(false)
-    setPlayerX(7)
+    setPlayerX(platforms[0].x)
+    setClimbStep(0)
     setJumping(false)
+    setFalling(false)
     setWalking(false)
     setFacing(1)
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
-    setLives(3)
+    if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
     setCollected([])
     setCollectedCoins([])
     setGameMessage('')
@@ -217,43 +253,52 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
         <div className="level-game__explore">
           <div className="level-game__explore-bar">
             <span>🪙 {12 + collectedCoins.length}　⭐ {points >= 500 ? 3 : points >= 300 ? 2 : points >= 10 ? 1 : 0}/3</span>
-            <span aria-label={`${lives} nyawa`}>{'❤️'.repeat(lives)}{'🩶'.repeat(3 - lives)}</span>
+            <span>🏝️ {climbStep + 1}/{platforms.length}</span>
           </div>
           <div className="level-game__objective-card">
-            <strong>Kumpulkan semua bentuk!</strong>
+            <strong>Naik ke puncak pulau!</strong>
             <div className="level-game__targets">
               <span className={collected.includes(0) ? 'is-found' : ''}>△</span>
               <span className={collected.includes(1) ? 'is-found' : ''}>□</span>
               <span className={collected.includes(2) ? 'is-found' : ''}>●</span>
-              <b>{collected.length}/3</b>
+              <b>{climbStep}/{platforms.length - 1}</b>
             </div>
           </div>
-          <div className="level-game__arena" aria-label="Area permainan. Gunakan tombol arah dan lompat untuk mengumpulkan bentuk.">
+          <div className="level-game__arena level-game__arena--climb" aria-label="Lintasan naik. Bergerak ke pulau berikutnya lalu lompat untuk menghindari rintangan.">
             <div className="level-game__arena-cloud cloud-one" /><div className="level-game__arena-cloud cloud-two" />
-            <div className="level-game__platform platform-one" /><div className="level-game__platform platform-two" /><div className="level-game__platform platform-three" />
-            {collectibles.map((position, index) => (
-              <span key={position} className={`level-game__collectible collectible-${index + 1}${collected.includes(index) ? ' is-collected' : ''}`} style={{ left: `${position}%` }} aria-hidden="true">
-                {['△', '□', '●'][index]}
-              </span>
-            ))}
-            {coinPositions.map((position, index) => !collectedCoins.includes(index) && <span key={position} className={`level-game__coin coin-${index + 1}`} style={{ left: `${position}%` }} aria-hidden="true">★</span>)}
-            {obstacles.map(({ position, shape }) => <span key={position} className={`level-game__obstacle level-game__obstacle--${shape}`} style={{ left: `${position}%` }} aria-hidden="true"><i /></span>)}
-            <span className={`level-game__runner-shadow${jumping ? ' is-jumping' : ''}`} style={{ left: `${playerX}%` }} aria-hidden="true" />
-            <div className={`level-game__runner${walking ? ' is-walking' : ''}${jumping ? ' is-jumping' : ''}${facing < 0 ? ' faces-left' : ''}`} style={{ left: `${playerX}%` }}>
-              <img className="level-game__player" src={explorerImage} alt="Karakter penjelajah" />
+            <div className="level-game__climb-world">
+              {platforms.map((platform, step) => {
+                const top = 82 - (step - climbStep) * 18
+                if (top < -14 || top > 104) return null
+                return <div key={step} className={`level-game__ledge${step === climbStep ? ' is-current' : ''}`} style={{ left: `${platform.x}%`, top: `${top}%` }} aria-label={`Pulau ${step + 1}`}><img src={floatingIsland} alt="" /></div>
+              })}
+              {shapeSteps.map((step, index) => {
+                const top = 82 - (step - climbStep) * 18 - 5
+                if (collected.includes(index) || top < -14 || top > 104) return null
+                return <span key={step} className={`level-game__collectible collectible-${index + 1}`} style={{ left: `${platforms[step].x}%`, top: `${top}%` }} aria-hidden="true">{['△', '□', '●'][index]}</span>
+              })}
+              {coinSteps.map((step, index) => {
+                const top = 82 - (step - climbStep) * 18 - 7
+                if (collectedCoins.includes(index) || top < -14 || top > 104) return null
+                return <span key={step} className={`level-game__coin coin-${index + 1}`} style={{ left: `${platforms[step].x + (index % 2 ? -10 : 10)}%`, top: `${top}%` }} aria-hidden="true">★</span>
+              })}
+              {climbStep >= platforms.length - 2 && <span className="level-game__finish level-game__finish--climb" style={{ left: `${platforms[platforms.length - 1].x}%`, top: `${82 - ((platforms.length - 1) - climbStep) * 18 - 16}%` }} aria-hidden="true">🏁</span>}
             </div>
-            <span className="level-game__finish" aria-hidden="true">🏁</span>
+            <span className={`level-game__runner-shadow${jumping ? ' is-jumping' : ''}${falling ? ' is-falling' : ''}`} style={{ left: `${playerX}%` }} aria-hidden="true" />
+            <div className={`level-game__runner${walking ? ' is-walking' : ''}${jumping ? ' is-jumping' : ''}${falling ? ' is-falling' : ''}${facing < 0 ? ' faces-left' : ''}`} style={{ left: `${playerX}%` }}>
+              <img className={`level-game__player level-game__player--base${walking && !jumping ? ' is-hidden' : ''}`} src={jumping ? jumpFrame : explorerImage} alt="Karakter penjelajah" />
+              <span className={`level-game__walk-sprites${walking && !jumping ? ' is-active' : ''}`} aria-hidden="true">
+                <img className={`level-game__walk-frame${walkFrame === 0 ? ' is-visible' : ''}`} src={walkFrameOne} alt="" />
+                <img className={`level-game__walk-frame${walkFrame === 1 ? ' is-visible' : ''}`} src={walkFrameTwo} alt="" />
+              </span>
+            </div>
           </div>
-          <div className="level-game__movement-help">Lewati rintangan dan kumpulkan semua bentuk</div>
           <div className="level-game__controls" aria-label="Kontrol permainan">
             <button onClick={() => movePlayer(-1)} type="button" aria-label="Bergerak ke kiri">←</button>
             <button onClick={() => movePlayer(1)} type="button" aria-label="Bergerak ke kanan">→</button>
             <button className="jump-control" onClick={jump} type="button" aria-label="Lompat">↑<small>LOMPAT</small></button>
           </div>
-          <p className="level-game__game-message" role="status">{gameMessage || 'Gunakan ← → untuk bergerak dan ↑ untuk melompat.'}</p>
-          <button className="level-game__continue" disabled={collected.length < 3 || playerX < 90} onClick={() => setStage('quiz')} type="button">
-            {collected.length < 3 ? `Kumpulkan bentuk (${collected.length}/3)` : playerX < 90 ? 'Lewati rintangan terakhir' : 'Lanjut ke tantangan soal'} <span>→</span>
-          </button>
+          <p className="level-game__game-message" role="status">{gameMessage || 'Tekan lompat dari mana saja untuk menuju pulau berikutnya.'}</p>
           {paused && <div className="level-game__pause-backdrop"><div className="level-game__pause-card"><strong>Petualangan dijeda</strong><button className="level-game__continue" onClick={() => setPaused(false)} type="button">Lanjut bermain</button><button className="level-game__pause-exit" onClick={onBack} type="button">Kembali ke peta</button></div></div>}
         </div>
       )}
@@ -323,6 +368,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
 }
 
 export default LevelGame
+
 
 
 
