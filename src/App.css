@@ -891,8 +891,14 @@
 }
 
 @media (min-width: 600px) {
-  .adventure-map { padding-bottom: 0; }
-  .adventure-map__artwork { width: min(100%, 560px); height: 100%; }
+  .adventure-map { align-items: center; padding-bottom: 0; }
+  .adventure-map__artwork {
+    width: auto;
+    height: min(100%, 821px);
+    max-width: 100%;
+    flex: 0 1 auto;
+    aspect-ratio: 941 / 1380;
+  }
 }
 
 /* ===== Interaksi seluruh titik level dan kuis ===== */
@@ -1436,6 +1442,7 @@
   .level-game__runner:not(.is-walking):not(.is-jumping):not(.is-falling),.level-game__runner-shadow { animation:none; }
   .level-game__runner.is-walking,.level-game__runner.is-jumping { animation:none; }
 }
+
 .level-game--result { isolation:isolate; }
 .level-game--result::before { position:fixed; z-index:0; inset:0; background-color:#8edcf6; background-image:linear-gradient(180deg,#66c9f22e 0%,#e9f9ff45 73%,#ccecbf55 100%),url('./assets/game-world.png'); background-position:center,center 68%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
 .level-game--result > .level-game__header,.level-game--result > .level-game__result { position:relative; z-index:1; }
