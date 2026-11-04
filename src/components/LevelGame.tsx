@@ -78,7 +78,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   const isCorrect = selected === question.answer
   const earnedStars = points >= 500 ? 3 : points >= 300 ? 2 : 1
   const earnedCoins = 40 + collected.length * 10 + collectedCoins.length * 5
-  const obstacles = [34, 62, 84]
+  const obstacles = [{ position: 34, shape: 'triangle' }, { position: 62, shape: 'square' }, { position: 84, shape: 'circle' }] as const
   const collectibles = [18, 49, 75]
   const coinPositions = [42, 56, 69]
 
@@ -93,7 +93,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     if (stage !== 'explore' || paused) return
     setFacing(direction)
     const next = Math.min(94, Math.max(5, playerX + direction * 7))
-    const obstacle = direction > 0 ? obstacles.find((point) => playerX < point && next >= point) : undefined
+    const obstacle = direction > 0 ? obstacles.find(({ position }) => playerX < position && next >= position) : undefined
     if (obstacle !== undefined && !jumping) {
       if (lives <= 1) {
         setLives(3)
@@ -101,7 +101,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
         setGameMessage('Kembali ke checkpoint. Coba lompat dengan tombol ↑!')
       } else {
         setLives((count) => count - 1)
-        setPlayerX(Math.max(5, obstacle - 9))
+        setPlayerX(Math.max(5, obstacle.position - 9))
         setGameMessage('Ada rintangan! Lompat dengan tombol ↑ untuk melewatinya.')
       }
       return
@@ -237,7 +237,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
               </span>
             ))}
             {coinPositions.map((position, index) => !collectedCoins.includes(index) && <span key={position} className={`level-game__coin coin-${index + 1}`} style={{ left: `${position}%` }} aria-hidden="true">★</span>)}
-            {obstacles.map((position) => <span key={position} className="level-game__obstacle" style={{ left: `${position}%` }} aria-hidden="true" />)}
+            {obstacles.map(({ position, shape }) => <span key={position} className={`level-game__obstacle level-game__obstacle--${shape}`} style={{ left: `${position}%` }} aria-hidden="true"><i /></span>)}
             <span className={`level-game__runner-shadow${jumping ? ' is-jumping' : ''}`} style={{ left: `${playerX}%` }} aria-hidden="true" />
             <div className={`level-game__runner${walking ? ' is-walking' : ''}${jumping ? ' is-jumping' : ''}${facing < 0 ? ' faces-left' : ''}`} style={{ left: `${playerX}%` }}>
               <img className="level-game__player" src={explorerImage} alt="Karakter penjelajah" />
@@ -323,6 +323,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
 }
 
 export default LevelGame
+
 
 
 
