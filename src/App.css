@@ -1446,3 +1446,6 @@
 .level-game--result { isolation:isolate; }
 .level-game--result::before { position:fixed; z-index:0; inset:0; background-color:#8edcf6; background-image:linear-gradient(180deg,#66c9f22e 0%,#e9f9ff45 73%,#ccecbf55 100%),url('./assets/game-world.png'); background-position:center,center 68%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
 .level-game--result > .level-game__header,.level-game--result > .level-game__result { position:relative; z-index:1; }
+.level-game--details { isolation:isolate; }
+.level-game--details::before { position:fixed; z-index:-1; inset:0; background-color:#85d8f6; background-image:linear-gradient(180deg,#65c8f222 0%,#eaf9ff30 72%,#c5e9b844 100%),url('./assets/game-world.png'); background-position:center,center 66%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
+.level-game--details > .level-game__header,.level-game--details > .level-game__detail-card { position:relative; z-index:1; }
