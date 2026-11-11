@@ -55,18 +55,20 @@ const questions: Question[] = [
 ]
 
 function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
-  const [stage, setStage] = useState<'details' | 'explore' | 'quiz' | 'result'>('details')
+  const [stage, setStage] = useState<'details' | 'explore' | 'quiz' | 'result' | 'gameover'>('details')
   const [paused, setPaused] = useState(false)
   const [playerX, setPlayerX] = useState(18)
   const [climbStep, setClimbStep] = useState(0)
   const [jumping, setJumping] = useState(false)
   const [falling, setFalling] = useState(false)
+  const [lives, setLives] = useState(3)
   const [walking, setWalking] = useState(false)
   const [walkFrame, setWalkFrame] = useState(0)
   const [facing, setFacing] = useState<1 | -1>(1)
   const walkTimer = useRef<number | null>(null)
   const jumpTimer = useRef<number | null>(null)
   const fallTimer = useRef<number | null>(null)
+  const gameOverTimer = useRef<number | null>(null)
   const [collected, setCollected] = useState<number[]>([])
   const [collectedCoins, setCollectedCoins] = useState<number[]>([])
   const [gameMessage, setGameMessage] = useState('')
@@ -83,7 +85,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   const levelQuestions = Array.from({ length: 5 }, (_, index) => topicQuestions[(questionStart + index) % topicQuestions.length])
   const question = levelQuestions[questionIndex]
   const isCorrect = selected === question.answer
-  const earnedStars = points >= 500 ? 3 : points >= 300 ? 2 : 1
+  const earnedStars = correctAnswers === 5 ? 3 : correctAnswers >= 4 ? 2 : 1
   const earnedCoins = 40 + collected.length * 10 + collectedCoins.length * 5
   const platforms = [{ x: 18 }, { x: 55 }, { x: 79 }, { x: 42 }, { x: 73 }, { x: 29 }]
   const shapeSteps = [1, 3, 4]
@@ -104,6 +106,8 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
 
   function fallFromPlatform() {
     if (falling) return
+    const remainingLives = Math.max(0, lives - 1)
+    setLives(remainingLives)
     setWalking(false)
     setJumping(false)
     setFalling(true)
@@ -112,18 +116,28 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
     if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
     fallTimer.current = window.setTimeout(() => {
+      if (remainingLives === 0) {
+        setFalling(false)
+        setStage('gameover')
+        return
+      }
       setFalling(false)
       setPlayerX(platforms[climbStep].x)
-      setGameMessage('Kamu kembali ke pulau terakhir. Coba lompat lagi!')
+      setGameMessage(`Kamu kembali ke pijakan terakhir. Sisa nyawa ${remainingLives}. Coba lagi!`)
     }, 680)
+    if (remainingLives === 0) {
+      setGameMessage('Nyawa habis! Permainan selesai.')
+    }
   }
 
   function movePlayer(direction: -1 | 1) {
     if (stage !== 'explore' || paused || falling || jumping) return
     setFacing(direction)
     const nextX = playerX + direction * 7
-    if (nextX < 5 || nextX > 95) {
-      setPlayerX(direction < 0 ? 4 : 96)
+    const currentPlatform = platforms[climbStep]
+    const platformEdge = 13
+    if (nextX < currentPlatform.x - platformEdge || nextX > currentPlatform.x + platformEdge) {
+      setPlayerX(nextX)
       fallFromPlatform()
       return
     }
@@ -182,6 +196,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
     if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
+    if (gameOverTimer.current !== null) window.clearTimeout(gameOverTimer.current)
   }, [])
 
   function answerQuestion(option: string) {
@@ -192,11 +207,17 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
       setPoints((score) => score + 100)
     } else if (option !== question.answer) {
       setMissedFirstAttempt(true)
+      const remainingLives = Math.max(0, lives - 1)
+      setLives(remainingLives)
+      if (remainingLives === 0) {
+        if (gameOverTimer.current !== null) window.clearTimeout(gameOverTimer.current)
+        gameOverTimer.current = window.setTimeout(() => setStage('gameover'), 850)
+      }
     }
   }
 
   function advanceQuestion() {
-    if (!isCorrect) return
+    if (selected === null) return
     if (questionIndex === levelQuestions.length - 1) {
       setStage('result')
       return
@@ -211,6 +232,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     setPaused(false)
     setPlayerX(platforms[0].x)
     setClimbStep(0)
+    setLives(3)
     setJumping(false)
     setFalling(false)
     setWalking(false)
@@ -218,6 +240,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     if (walkTimer.current !== null) window.clearTimeout(walkTimer.current)
     if (jumpTimer.current !== null) window.clearTimeout(jumpTimer.current)
     if (fallTimer.current !== null) window.clearTimeout(fallTimer.current)
+    if (gameOverTimer.current !== null) window.clearTimeout(gameOverTimer.current)
     setCollected([])
     setCollectedCoins([])
     setGameMessage('')
@@ -228,10 +251,15 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
     setPoints(0)
   }
 
+  function restartIntoGame() {
+    restart()
+    setStage('explore')
+  }
+
   return (
     <section className={`level-game level-game--${stage}`} aria-label={`Level ${level} ${stage === 'explore' ? 'petualangan' : 'bangun datar'}`}>
       <header className="level-game__header">
-        <button className="level-game__back" onClick={stage === 'details' || stage === 'quiz' || stage === 'result' ? onBack : () => setPaused(true)} type="button" aria-label={stage === 'explore' ? 'Jeda permainan' : 'Kembali ke peta'}>
+        <button className="level-game__back" onClick={stage === 'details' || stage === 'quiz' || stage === 'result' || stage === 'gameover' ? onBack : () => setPaused(true)} type="button" aria-label={stage === 'explore' ? 'Jeda permainan' : 'Kembali ke peta'}>
           {stage === 'explore' ? 'Ⅱ' : '‹'}
         </button>
         <div><span>{question.topic}</span><strong>Level {level}</strong></div>
@@ -242,7 +270,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
         <div className="level-game__detail-card">
           <div className="level-game__detail-banner"><span className="level-game__shape">{question.symbol}</span><div><small>SIAPKAN PERBEKALAN</small><h1>Level {level}</h1><strong>Gerbang {question.topic}</strong></div></div>
           <p className="level-game__eyebrow">Tujuan petualangan</p>
-          <p className="level-game__objective">Jelajahi pulau, kumpulkan 3 bentuk, lewati rintangan, lalu jawab 5 soal dengan benar.</p>
+          <p className="level-game__objective">Jelajahi pulau, kumpulkan 3 bentuk, lewati rintangan, dan jawab 5 soal. Kamu punya 3 nyawa.</p>
           <div className="level-game__detail-stats"><span>⏱ 3–5 menit</span><span>🎯 3 tantangan</span></div>
           <img className="level-game__detail-character" src={explorerImage} alt="Maskot penjelajah siap berangkat" />
           <button className="level-game__continue" onClick={() => setStage('explore')} type="button">Mulai Petualangan <span>→</span></button>
@@ -252,7 +280,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
       {stage === 'explore' && (
         <div className="level-game__explore">
           <div className="level-game__explore-bar">
-            <span>🪙 {12 + collectedCoins.length}　⭐ {points >= 500 ? 3 : points >= 300 ? 2 : points >= 10 ? 1 : 0}/3</span>
+            <span>❤️ {lives}　🪙 {12 + collectedCoins.length}　⭐ {points >= 500 ? 3 : points >= 300 ? 2 : points >= 10 ? 1 : 0}/3</span>
             <span>🏝️ {climbStep + 1}/{platforms.length}</span>
           </div>
           <div className="level-game__objective-card">
@@ -273,12 +301,12 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
                 return <div key={step} className={`level-game__ledge${step === climbStep ? ' is-current' : ''}`} style={{ left: `${platform.x}%`, top: `${top}%` }} aria-label={`Pulau ${step + 1}`}><img src={floatingIsland} alt="" /></div>
               })}
               {shapeSteps.map((step, index) => {
-                const top = 82 - (step - climbStep) * 18 - 5
+                const top = 82 - (step - climbStep) * 18 - 10
                 if (collected.includes(index) || top < -14 || top > 104) return null
                 return <span key={step} className={`level-game__collectible collectible-${index + 1}`} style={{ left: `${platforms[step].x}%`, top: `${top}%` }} aria-hidden="true">{['△', '□', '●'][index]}</span>
               })}
               {coinSteps.map((step, index) => {
-                const top = 82 - (step - climbStep) * 18 - 7
+                const top = 82 - (step - climbStep) * 18 - 12
                 if (collectedCoins.includes(index) || top < -14 || top > 104) return null
                 return <span key={step} className={`level-game__coin coin-${index + 1}`} style={{ left: `${platforms[step].x + (index % 2 ? -10 : 10)}%`, top: `${top}%` }} aria-hidden="true">★</span>
               })}
@@ -305,7 +333,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
 
       {stage === 'quiz' && (
         <div className="level-game__content">
-          <div className="level-game__quiz-progress"><span>Soal {questionIndex + 1}/5</span><span>🪙 {points} poin</span></div>
+          <div className="level-game__quiz-progress"><span>Soal {questionIndex + 1}/5</span><span>❤️ {lives}　🪙 {points} poin</span></div>
           <div className="level-game__progress"><i style={{ width: `${((questionIndex + 1) / 5) * 100}%` }} /></div>
           <div className="level-game__shape" aria-hidden="true">{question.symbol}</div>
           <p className="level-game__eyebrow">Tantangan bangun datar</p>
@@ -330,16 +358,14 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
           </div>
           {selected && (
             <div className={`level-game__feedback${isCorrect ? ' is-correct' : ' is-wrong'}`} role="status">
-              <strong>{isCorrect ? missedFirstAttempt ? 'Jawaban benar! Kesempatan kedua berhasil 🎉' : 'Jawaban benar! +100 poin 🎉' : 'Belum tepat. 0 poin, coba lagi ya.'}</strong>
-              <span>{isCorrect ? question.explanation : 'Pilih “Coba Lagi” untuk menjawab kembali.'}</span>
+              <strong>{isCorrect ? 'Jawaban benar! +100 poin 🎉' : `Belum tepat. Nyawa berkurang 1 (sisa ${lives}).`}</strong>
+              <span>{isCorrect ? question.explanation : `Jawaban yang benar: ${question.answer}. ${question.explanation}`}</span>
             </div>
           )}
-          {isCorrect ? (
-            <button className="level-game__continue" onClick={advanceQuestion} type="button">
+          {selected !== null ? (
+            <button className="level-game__continue" onClick={advanceQuestion} disabled={lives === 0} type="button">
               {questionIndex === 4 ? 'Lihat hasil level' : 'Soal berikutnya'} <span>→</span>
             </button>
-          ) : selected ? (
-            <button className="level-game__continue level-game__continue--retry" onClick={() => setSelected(null)} type="button">Coba Lagi</button>
           ) : (
             <button className="level-game__continue" disabled type="button">Pilih jawaban</button>
           )}
@@ -361,6 +387,18 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
             {completed ? 'Kembali ke Peta' : 'Lanjutkan'} <span>→</span>
           </button>
           <button className="level-game__continue level-game__continue--retry" onClick={restart} type="button">↻　Ulangi</button>
+        </div>
+      )}
+
+      {stage === 'gameover' && (
+        <div className="level-game__gameover">
+          <div className="level-game__gameover-hearts" aria-label="Nyawa habis">♡　♡　♡</div>
+          <div className="level-game__gameover-banner">Game Over</div>
+          <img src={explorerImage} alt="Maskot penjelajah" />
+          <p>Nyawamu habis. Yuk, coba lagi dari awal!</p>
+          <div className="level-game__gameover-score">Skor terakhir <strong>{points}</strong><br />Jawaban benar <strong>{correctAnswers}/5</strong></div>
+          <button className="level-game__continue level-game__continue--green" onClick={restartIntoGame} type="button">↻　Ulangi Level</button>
+          <button className="level-game__continue level-game__continue--retry" onClick={onBack} type="button">Kembali ke Peta</button>
         </div>
       )}
     </section>

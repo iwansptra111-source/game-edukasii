@@ -324,7 +324,7 @@
   min-height: 0;
   flex: 1 1 0;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .explorer-character {
@@ -1022,6 +1022,12 @@
   color: #174679;
   text-shadow: none;
 }
+.adventure-map__rating { position:absolute; top:78%; left:50%; display:flex; width:150%; justify-content:center; gap:1px; color:#71879a; font-size:clamp(8px,2.1vw,12px); line-height:1; text-shadow:0 1px 1px #123c7355; transform:translateX(-50%); white-space:nowrap; }
+.adventure-map__rating i { font-style:normal; }
+.adventure-map__rating i.is-earned { color:#ffd139; text-shadow:0 1px 0 #a95d1f,0 0 4px #fff3a7; }
+.adventure-map--overview .adventure-map__hotspot--overview { z-index:4; width:7.8%; font-size:clamp(9px,2.8vw,17px); }
+.adventure-map--overview .adventure-map__hotspot--overview .adventure-map__badge { width:100%; }
+.adventure-map--overview .adventure-map__hotspot--overview .adventure-map__rating { top:84%; width:145%; gap:0; font-size:clamp(6px,1.55vw,10px); }
 .adventure-map__hotspot.is-completed .adventure-map__badge span,
 .adventure-map__hotspot[aria-label="Level 1, terbuka"] .adventure-map__badge span { font-size: 1.15em; }
 .adventure-map__hotspot:hover { filter: none; }
@@ -1095,6 +1101,17 @@
 .level-game__score-summary strong { float:right; color:#1c578a; }
 .level-game__result .level-game__continue { width:min(100%,380px); min-height:46px; margin:7px auto 0; }
 .level-game__continue--green { border-color:#29883f; background:linear-gradient(#87e24a,#35b442); box-shadow:0 4px 0 #24753a; color:#fff; text-shadow:0 1px #24753a; }
+.level-game--gameover { isolation:isolate; }
+.level-game--gameover::before { position:fixed; z-index:0; inset:0; background-color:#8edcf6; background-image:linear-gradient(180deg,#66c9f238 0%,#e9f9ff45 73%,#ccecbf55 100%),url('./assets/game-world.png'); background-position:center,center 68%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
+.level-game--gameover > .level-game__header,.level-game__gameover { position:relative; z-index:1; }
+.level-game__gameover { width:min(100%,420px); margin:auto; padding:12px 0 22px; text-align:center; }
+.level-game__gameover-hearts { margin-bottom:3px; color:#e85b61; font-size:clamp(30px,9vw,46px); font-weight:1000; letter-spacing:2px; text-shadow:0 3px 0 #a93946; }
+.level-game__gameover-banner { width:max-content; max-width:100%; margin:0 auto 5px; padding:8px 24px; border:3px solid #a54235; border-radius:14px 14px 19px 19px; background:linear-gradient(#ff9b68,#e95443); box-shadow:0 5px 0 #873b31; color:#fff; font-size:clamp(24px,7vw,34px); font-weight:1000; text-shadow:0 3px 0 #8c352d; }
+.level-game__gameover > img { display:block; width:auto; height:clamp(125px,21svh,175px); max-width:48%; margin:0 auto 6px; object-fit:contain; filter:grayscale(.18) drop-shadow(0 6px 4px #24496435); }
+.level-game__gameover > p { margin:0 auto 10px; color:#234f75; font-size:15px; font-weight:850; }
+.level-game__gameover-score { width:min(100%,340px); margin:0 auto 8px; padding:10px 14px; border:2px solid #c8e6f3; border-radius:15px; background:#ffffffed; box-shadow:0 4px 0 #b4d8e9; color:#285579; font-size:13px; line-height:1.8; text-align:left; }
+.level-game__gameover-score strong { float:right; color:#14467b; }
+.level-game__gameover .level-game__continue { width:min(100%,340px); min-height:46px; margin:8px auto 0; }
 
 @keyframes collectible-float { from { margin-bottom:0; } to { margin-bottom:9px; } }
 
@@ -1343,6 +1360,7 @@
 .level-game__timer-track i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ffb520,#ffe34b); box-shadow:inset 0 1px 2px #fff9; transition:width .5s linear; }
 .level-game__question-count { min-width:38px; padding:5px 7px; border-radius:12px; background:#effaff; color:#14578e; font-size:12px; font-weight:950; text-align:center; }
 .level-game--quiz .level-game__content { width:min(100%,480px); margin:auto; padding:8px 0 16px; }
+.level-game--quiz .level-game__content > .level-game__shape { width:100%; height:auto; min-height:88px; margin:0 auto 8px; border:0; border-radius:0; background:transparent; box-shadow:none; color:#155092; font-size:clamp(72px,18vw,96px); line-height:1; text-shadow:0 2px 4px #ffffff8c; }
 .level-game__question-card { padding:10px; border:2px solid #fff; border-radius:18px; background:linear-gradient(145deg,#fffffffa,#edf9ffed); box-shadow:0 5px 0 #5ca7d3,0 9px 20px #14507724; }
 .level-game__question-card .level-game__eyebrow { margin:0 0 3px; color:#46799d; font-size:11px; text-align:left; }
 .level-game__question-card h1 { margin:0 0 8px; color:#123e72; font-size:clamp(17px,4.8vw,21px); line-height:1.2; text-align:left; }
@@ -1449,3 +1467,32 @@
 .level-game--details { isolation:isolate; }
 .level-game--details::before { position:fixed; z-index:-1; inset:0; background-color:#85d8f6; background-image:linear-gradient(180deg,#65c8f222 0%,#eaf9ff30 72%,#c5e9b844 100%),url('./assets/game-world.png'); background-position:center,center 66%; background-repeat:no-repeat; background-size:cover; content:''; pointer-events:none; }
 .level-game--details > .level-game__header,.level-game--details > .level-game__detail-card { position:relative; z-index:1; }
+
+/* The first map view is the full island overview; tap an island to fly in. */
+.adventure-map--overview .adventure-map__island-entry { position:absolute; z-index:3; padding:0; border:2px solid transparent; border-radius:28px; background:transparent; cursor:pointer; touch-action:manipulation; transform:translate(-50%,-50%); transition:background .2s ease,border-color .2s ease,transform .2s ease; }
+.adventure-map--overview .adventure-map__island-entry span { position:absolute; top:50%; left:50%; padding:7px 12px; border:1px solid #ffffffc7; border-radius:999px; background:#0a4d7dc9; box-shadow:0 3px 10px #123c733d; color:#fff; font-size:clamp(9px,2.5vw,13px); font-weight:900; opacity:0; transform:translate(-50%,-50%) scale(.94); transition:opacity .2s ease,transform .2s ease; white-space:nowrap; }
+.adventure-map--overview .adventure-map__island-entry:hover,.adventure-map--overview .adventure-map__island-entry:focus-visible { border-color:#fff; background:#63c7f326; outline:none; }
+.adventure-map--overview .adventure-map__island-entry:hover span,.adventure-map--overview .adventure-map__island-entry:focus-visible span { opacity:1; transform:translate(-50%,-50%) scale(1); }
+.adventure-map--overview .adventure-map__island-entry:active { transform:translate(-50%,-50%) scale(.97); }
+.adventure-map--island { align-items:center; background-color:#79c9f0; background-image:linear-gradient(180deg,#61c7f51c 0%,#e7f9ff20 70%,#c6ecdc30 100%),url('./assets/game-world.png'); background-position:center,center 58%; background-repeat:no-repeat; background-size:cover; }
+.adventure-map__artwork--island { width:min(100%,520px); height:auto; flex:0 0 auto; aspect-ratio:457 / 510; filter:drop-shadow(0 12px 18px #153e4d45); }
+.adventure-map__artwork--island > img { object-fit:contain; }
+.adventure-map--island .adventure-map__back--island { display:grid; width:42px; height:42px; border:2px solid #fff; background:linear-gradient(#fff,#e8f8ff); color:#1767b5; box-shadow:0 3px 9px #17497935; }
+.adventure-map__cloud-transition { position:fixed; z-index:20; inset:-2%; overflow:hidden; background:rgba(239,250,255,.94); pointer-events:none; animation:cloud-curtain 900ms cubic-bezier(.34,.02,.25,1) both; }
+.adventure-map__cloud-transition::before,.adventure-map__cloud-transition::after { position:absolute; inset:-32%; border-radius:50%; background:radial-gradient(ellipse at 18% 42%,#fff 0 13%,#f7fdff 20%,transparent 34%),radial-gradient(ellipse at 38% 26%,#fff 0 14%,#f4fbff 22%,transparent 36%),radial-gradient(ellipse at 63% 47%,#fff 0 16%,#f6fcff 24%,transparent 39%),radial-gradient(ellipse at 84% 31%,#fff 0 13%,#f6fcff 22%,transparent 36%),radial-gradient(ellipse at 48% 76%,#fff 0 17%,#f4fbff 25%,transparent 40%); content:''; filter:blur(8px); animation:cloud-sweep 900ms ease-in-out both; }
+.adventure-map__cloud-transition::after { transform:rotate(180deg) scale(.9); opacity:.76; animation-delay:30ms; }
+.adventure-map__cloud-transition i { position:absolute; z-index:1; width:38vw; height:38vw; min-width:190px; min-height:190px; border-radius:50%; background:radial-gradient(ellipse,#fff 0 34%,#f4fbff 58%,transparent 72%); filter:blur(5px); animation:cloud-puff 900ms ease-in-out both; }
+.adventure-map__cloud-transition i:nth-child(1) { top:-14%; left:-8%; }
+.adventure-map__cloud-transition i:nth-child(2) { top:24%; right:-15%; animation-delay:35ms; }
+.adventure-map__cloud-transition i:nth-child(3) { bottom:-18%; left:14%; animation-delay:70ms; }
+.adventure-map__cloud-transition i:nth-child(4) { top:4%; left:38%; animation-delay:20ms; }
+.adventure-map__cloud-transition i:nth-child(5) { right:18%; bottom:-20%; animation-delay:50ms; }
+@keyframes cloud-curtain { 0% { opacity:0; } 32%,58% { opacity:1; } 100% { opacity:0; } }
+@keyframes cloud-sweep { 0% { transform:scale(.68) translateY(10%); } 48%,60% { transform:scale(1.12) translateY(0); } 100% { transform:scale(1.4) translateY(-5%); } }
+@keyframes cloud-puff { 0% { transform:scale(.62); opacity:.45; } 50% { transform:scale(1.18); opacity:1; } 100% { transform:scale(1.42); opacity:.55; } }
+@media(min-width:600px) {
+  .adventure-map__artwork--island { width:min(100%,520px); height:auto; max-width:100%; flex:0 0 auto; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .adventure-map__cloud-transition,.adventure-map__cloud-transition::before,.adventure-map__cloud-transition::after,.adventure-map__cloud-transition i { animation-duration:180ms; }
+}
