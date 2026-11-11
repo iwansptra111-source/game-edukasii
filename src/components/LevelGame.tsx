@@ -14,6 +14,21 @@ type Question = {
   explanation: string
 }
 
+const realWorldObjects: Record<string, { emoji: string; label: string }> = {
+  '□': { emoji: '🪟', label: 'Jendela' },
+  '△': { emoji: '⛺', label: 'Tenda' },
+  '○': { emoji: '⚽', label: 'Bola' },
+  '◉': { emoji: '🕒', label: 'Jam dinding' },
+  '▭': { emoji: '📘', label: 'Buku' },
+  '◇': { emoji: '🪁', label: 'Layang-layang' },
+  '▱': { emoji: '📐', label: 'Penggaris' },
+  '⏢': { emoji: '🪣', label: 'Ember' },
+  '◿': { emoji: '📐', label: 'Siku penggaris' },
+  '⬡': { emoji: '🍯', label: 'Sarang madu' },
+  '⬠': { emoji: '⚽', label: 'Bola berpola' },
+  '∠': { emoji: '📐', label: 'Siku penggaris' },
+}
+
 type LevelGameProps = {
   level: number
   completed: boolean
@@ -84,6 +99,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
   const questionStart = (level - 1) % topicQuestions.length
   const levelQuestions = Array.from({ length: 5 }, (_, index) => topicQuestions[(questionStart + index) % topicQuestions.length])
   const question = levelQuestions[questionIndex]
+  const realWorldObject = realWorldObjects[question.symbol] ?? { emoji: '🪟', label: 'Jendela' }
   const isCorrect = selected === question.answer
   const earnedStars = correctAnswers === 5 ? 3 : correctAnswers >= 4 ? 2 : 1
   const earnedCoins = 40 + collected.length * 10 + collectedCoins.length * 5
@@ -335,7 +351,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
         <div className="level-game__content">
           <div className="level-game__quiz-progress"><span>Soal {questionIndex + 1}/5</span><span>❤️ {lives}　🪙 {points} poin</span></div>
           <div className="level-game__progress"><i style={{ width: `${((questionIndex + 1) / 5) * 100}%` }} /></div>
-          <div className="level-game__shape" aria-hidden="true">{question.symbol}</div>
+          <div className="level-game__object-illustration" role="img" aria-label={`Contoh benda: ${realWorldObject.label}`}><span aria-hidden="true">{realWorldObject.emoji}</span><small>{realWorldObject.label}</small></div>
           <p className="level-game__eyebrow">Tantangan bangun datar</p>
           <h1>{question.prompt}</h1>
           <div className="level-game__answers">

@@ -80,8 +80,8 @@ function AdventureMap({ notice, unlockedLevel, completedLevels, levelStars, init
     setTransitioning(true)
     transitionTimers.current.forEach((timer) => window.clearTimeout(timer))
     transitionTimers.current = [
-      window.setTimeout(() => setView(target), 440),
-      window.setTimeout(() => setTransitioning(false), 900),
+      window.setTimeout(() => setView(target), 950),
+      window.setTimeout(() => setTransitioning(false), 1900),
     ]
   }
 
@@ -120,7 +120,14 @@ function AdventureMap({ notice, unlockedLevel, completedLevels, levelStars, init
           </>
         )}
       </div>
-      {transitioning && <div className="adventure-map__cloud-transition" aria-hidden="true"><i /><i /><i /><i /><i /></div>}
+      {transitioning && <div className="adventure-map__cloud-transition" aria-hidden="true">
+        <img className="adventure-map__cloud-bank adventure-map__cloud-bank--left" src="/cloud-bank.png" alt="" />
+        <img className="adventure-map__cloud-bank adventure-map__cloud-bank--right" src="/cloud-bank.png" alt="" />
+        <img className="adventure-map__cloud-puff adventure-map__cloud-puff--center" src="/cloud-puff.png" alt="" />
+        <img className="adventure-map__cloud-puff adventure-map__cloud-puff--upper" src="/cloud-puff.png" alt="" />
+        <img className="adventure-map__cloud-puff adventure-map__cloud-puff--lower" src="/cloud-puff.png" alt="" />
+        <img className="adventure-map__cloud-puff adventure-map__cloud-puff--bottom" src="/cloud-puff.png" alt="" />
+      </div>}
       {notice && <button className="adventure-map__notice" onClick={onDismissNotice} type="button">{notice}<span aria-hidden="true">　×</span></button>}
     </section>
   )
