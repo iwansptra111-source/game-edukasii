@@ -32,6 +32,7 @@ const realWorldObjects: Record<string, { emoji: string; label: string }> = {
 type LevelGameProps = {
   level: number
   completed: boolean
+  onOpenSettings: () => void
   onBack: () => void
   onComplete: (level: number, stars: number, coins: number, xp: number) => void
 }
@@ -69,7 +70,7 @@ const questions: Question[] = [
   { topic: 'Kastil Geometri', symbol: '△', prompt: 'Sebuah segitiga memiliki sisi 5 cm, 6 cm, dan 7 cm. Kelilingnya ...', options: ['11 cm', '18 cm', '30 cm', '42 cm'], answer: '18 cm', explanation: 'Keliling segitiga = 5 + 6 + 7 = 18 cm.' },
 ]
 
-function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
+function LevelGame({ level, completed, onBack, onComplete, onOpenSettings }: LevelGameProps) {
   const [stage, setStage] = useState<'details' | 'explore' | 'quiz' | 'result' | 'gameover'>('details')
   const [paused, setPaused] = useState(false)
   const [playerX, setPlayerX] = useState(18)
@@ -280,6 +281,7 @@ function LevelGame({ level, completed, onBack, onComplete }: LevelGameProps) {
         </button>
         <div><span>{question.topic}</span><strong>Level {level}</strong></div>
         <span className="level-game__star">⭐ {points}</span>
+        <button className="game-header__settings level-game__settings" onClick={onOpenSettings} type="button" aria-label="Buka pengaturan"><span aria-hidden="true">⚙</span></button>
       </header>
 
       {stage === 'details' && (

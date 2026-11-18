@@ -5,6 +5,9 @@ import AdventureScene from './components/AdventureScene'
 import BottomNavigation, { type NavigationItem } from './components/BottomNavigation'
 import GameHeader from './components/GameHeader'
 import LevelGame from './components/LevelGame'
+import MapHeader from './components/MapHeader'
+import SettingsDialog from './components/SettingsDialog'
+import useGameMusic from './hooks/useGameMusic'
 
 type SavedProgress = { unlockedLevel: number; completedLevels: number[]; levelStars: Record<string, number>; stars: number; coins: number; xp: number }
 const progressKey = 'petualangan-bangun-datar-progress'
@@ -41,6 +44,8 @@ function App() {
   const [mapWorld, setMapWorld] = useState(1)
   const [mapResumeView, setMapResumeView] = useState<'overview' | 'island'>('overview')
   const [notice, setNotice] = useState('')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const music = useGameMusic()
 
   function chooseLevel(level: number) {
     if (level > progress.unlockedLevel) {
@@ -89,30 +94,36 @@ function App() {
         <LevelGame
           level={selectedLevel}
           completed={progress.completedLevels.includes(selectedLevel)}
+          onOpenSettings={() => setSettingsOpen(true)}
           onBack={() => setSelectedLevel(null)}
           onComplete={finishLevel}
         />
       ) : isOnMap ? (
-        <AdventureMap
-          notice={notice}
-          unlockedLevel={progress.unlockedLevel}
-          completedLevels={progress.completedLevels}
-          levelStars={progress.levelStars}
-          initialWorld={mapWorld}
-          initialView={mapResumeView}
-          onBack={() => { setNotice(''); setMapResumeView('overview'); setActiveTab('Beranda') }}
-          onSelectLevel={chooseLevel}
-          onShowMission={() => setNotice(`Misi harian: selesaikan 3 level dengan nilai sempurna. Progres ${Math.min(progress.completedLevels.length, 3)}/3.`)}
-          onShowCollection={() => setNotice(`Koleksi: ${progress.stars} bintang, ${progress.coins} koin, dan ${progress.xp} XP.`)}
-          onDismissNotice={() => setNotice('')}
-        />
+        <>
+          <div className="game-home__landscape" aria-hidden="true" />
+          <MapHeader onOpenSettings={() => setSettingsOpen(true)} />
+          <AdventureMap
+            notice={notice}
+            unlockedLevel={progress.unlockedLevel}
+            completedLevels={progress.completedLevels}
+            levelStars={progress.levelStars}
+            initialWorld={mapWorld}
+            initialView={mapResumeView}
+            onBack={() => { setNotice(''); setMapResumeView('overview'); setActiveTab('Beranda') }}
+            onSelectLevel={chooseLevel}
+            onShowMission={() => setNotice(`Misi harian: selesaikan 3 level dengan nilai sempurna. Progres ${Math.min(progress.completedLevels.length, 3)}/3.`)}
+            onShowCollection={() => setNotice(`Koleksi: ${progress.stars} bintang, ${progress.coins} koin, dan ${progress.xp} XP.`)}
+            onDismissNotice={() => setNotice('')}
+          />
+        </>
       ) : (
         <>
           <div className="game-home__landscape" aria-hidden="true" />
-          <GameHeader starCount={120 + progress.stars} />
+          <GameHeader starCount={120 + progress.stars} onOpenSettings={() => setSettingsOpen(true)} />
           <AdventureScene onStartAdventure={() => { setNotice(''); setActiveTab('Peta') }} />
         </>
       )}
+      {settingsOpen && <SettingsDialog musicEnabled={music.enabled} onToggleMusic={music.toggleMusic} onClose={() => setSettingsOpen(false)} />}
       {!isPlaying && <BottomNavigation activeItem={activeTab} onSelect={(item) => { setNotice(''); setMapResumeView('overview'); setActiveTab(item) }} />}
     </main>
   )

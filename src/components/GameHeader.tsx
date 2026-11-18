@@ -3,7 +3,7 @@ import Icon from './Icon'
 import PlayerProfile from './PlayerProfile'
 import ResourceCounter from './ResourceCounter'
 
-function GameHeader({ starCount = 120 }: { starCount?: number }) {
+function GameHeader({ starCount = 120, onOpenSettings }: { starCount?: number; onOpenSettings: () => void }) {
   return (
     <header className="game-header">
       <PlayerProfile />
@@ -11,9 +11,9 @@ function GameHeader({ starCount = 120 }: { starCount?: number }) {
         <div className="game-header__resources" aria-label="Sumber daya">
           <ResourceCounter icon="star" label="bintang" value={starCount} />
           <ResourceCounter icon="gem" label="berlian" value={45} />
-          <span className="game-header__settings" aria-label="Pengaturan">
+          <button className="game-header__settings" onClick={onOpenSettings} type="button" aria-label="Buka pengaturan">
             <Icon name="settings" />
-          </span>
+          </button>
         </div>
         <DailyMission />
       </div>

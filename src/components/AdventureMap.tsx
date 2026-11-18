@@ -65,6 +65,7 @@ function AdventureMap({ notice, unlockedLevel, completedLevels, levelStars, init
   const transitionTimers = useRef<number[]>([])
   const world = worldMaps[selectedWorld - 1]
   const worldLevels = levels.filter(({ level }) => level >= (selectedWorld - 1) * 6 + 1 && level <= selectedWorld * 6)
+  const perfectMissionCount = Math.min(3, Object.values(levelStars).filter((rating) => rating === 3).length)
 
   useEffect(() => {
     if (!notice) return
@@ -91,8 +92,13 @@ function AdventureMap({ notice, unlockedLevel, completedLevels, levelStars, init
         <img src={view === 'overview' ? '/adventure-map.jpg' : '/island-map.png'} alt={view === 'overview' ? 'Peta petualangan dengan lima pulau' : `Peta ${world.title}`} />
         {view === 'overview' ? (
           <>
-            <button className="adventure-map__back" type="button" onClick={onBack} aria-label="Kembali ke beranda"><Icon name="chevron" /></button>
-            <button className="adventure-map__mission-link" onClick={onShowMission} type="button" aria-label="Lihat misi harian" />
+            <button className="adventure-map__back" type="button" onClick={onBack} aria-label="Kembali ke beranda"><img src="/map-back-button.png" alt="" /></button>
+            <img className="adventure-map__title-banner" src="/map-title-banner.png" alt="" />
+            <button className="adventure-map__mission-card" onClick={onShowMission} type="button" aria-label={`Misi harian: selesaikan 3 level sempurna, progres ${perfectMissionCount} dari 3`}>
+              <span className="adventure-map__mission-icon" aria-hidden="true">▤</span>
+              <span className="adventure-map__mission-copy"><strong>Misi Hari Ini</strong><small>Selesaikan 3 level sempurna</small><span className="adventure-map__mission-progress"><i style={{ width: `${perfectMissionCount / 3 * 100}%` }} /></span></span>
+              <em className="adventure-map__mission-count">{perfectMissionCount}/3</em>
+            </button>
             <button className="adventure-map__collection-link" onClick={onShowCollection} type="button" aria-label="Lihat koleksi bintang" />
             {levels.map(({ level, x, y }) => {
               const completed = completedLevels.includes(level)

@@ -202,6 +202,8 @@
   border-radius: 50%;
   background: #073d79;
   color: #fff;
+  padding: 0;
+  cursor: pointer;
 }
 
 .game-header__settings svg {
@@ -803,6 +805,64 @@
   background: linear-gradient(180deg, #50baff, #bceeff 68%, #e5f7df);
 }
 
+.game-home--map .game-home__landscape {
+  z-index: -2;
+  background-position: center, 50% 100%, center;
+}
+
+.map-header {
+  z-index: 2;
+  display: grid;
+  width: min(100%, 680px);
+  min-height: 62px;
+  flex: 0 0 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) 38px;
+  align-items: center;
+  gap: 7px;
+  margin: 0 auto;
+  padding: max(5px, env(safe-area-inset-top)) 10px 4px;
+}
+
+.map-header__profile,
+.map-header__currency {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.map-header__settings {
+  display: grid;
+  width: 36px;
+  height: 38px;
+  place-items: center;
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-radius: 50%;
+  background: #0b477f;
+  box-shadow: 0 3px 8px #124e8138;
+  padding: 0;
+  cursor: pointer;
+}
+
+.map-header__settings img { display:block; width:23px; height:23px; filter:brightness(0) invert(1); }
+.game-header__settings:focus-visible,.map-header__settings:focus-visible,.settings-dialog button:focus-visible { outline:3px solid #ffe477; outline-offset:3px; }
+
+.level-game__settings { width:36px; height:36px; font-size:20px; }
+.level-game__settings span { line-height:1; }
+
+.settings-overlay { position:fixed; z-index:100; inset:0; display:grid; place-items:center; padding:20px; background:#082c4db8; backdrop-filter:blur(5px); }
+.settings-dialog { position:relative; width:min(100%,390px); padding:24px 20px 20px; border:2px solid #fff; border-radius:24px; background:linear-gradient(145deg,#f8fdff,#e5f5ff); box-shadow:0 12px 36px #062b4e66,0 5px 0 #5ca5d1; color:#123c73; }
+.settings-dialog__close { position:absolute; top:10px; right:12px; display:grid; width:34px; height:34px; place-items:center; border:1px solid #c6e1f1; border-radius:50%; background:#fff; color:#245987; font-size:25px; line-height:1; cursor:pointer; }
+.settings-dialog__eyebrow { color:#4a83ac; font-size:10px; font-weight:950; letter-spacing:.1em; }
+.settings-dialog h2 { margin:4px 38px 18px 0; color:#123c73; font-size:24px; }
+.settings-dialog__music-row { display:flex; align-items:center; gap:12px; padding:13px; border:1px solid #c6e3f4; border-radius:17px; background:#fff; box-shadow:0 3px 0 #c8e5f4; }
+.settings-dialog__music-icon { display:grid; width:42px; height:42px; flex:0 0 auto; place-items:center; border-radius:13px; background:linear-gradient(145deg,#ffe678,#ffb52d); color:#174679; font-size:26px; font-weight:900; }
+.settings-dialog__music-row > div { display:flex; min-width:0; flex:1; flex-direction:column; gap:3px; }
+.settings-dialog__music-row strong { font-size:14px; }
+.settings-dialog__music-row small { color:#527597; font-size:11px; }
+.settings-dialog__toggle { min-width:62px; padding:9px 11px; border:1px solid #a8cbe0; border-radius:999px; background:#eaf4fa; color:#315d7c; font-weight:900; cursor:pointer; }
+.settings-dialog__toggle.is-on { border-color:#33a75a; background:linear-gradient(#69df61,#36b94b); color:#fff; box-shadow:0 3px 0 #21813d; }
+
 .adventure-map {
   position: relative;
   display: flex;
@@ -817,6 +877,10 @@
 
 .adventure-map::-webkit-scrollbar { display: none; }
 
+.adventure-map--overview { align-items:stretch; background:transparent; }
+.adventure-map--overview .adventure-map__artwork { width:100%; height:100%; max-width:100%; max-height:none; flex:1 1 auto; aspect-ratio:auto; }
+.adventure-map--overview .adventure-map__artwork::before { position:absolute; z-index:1; top:0; left:0; width:42%; height:2.8%; background:linear-gradient(180deg,#53b8ef,#58baf0); content:''; pointer-events:none; }
+
 .adventure-map__artwork {
   position: relative;
   width: min(100%, 600px);
@@ -825,12 +889,14 @@
   line-height: 0;
 }
 
-.adventure-map__artwork > img {
+.adventure-map__artwork > img:first-child {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
 }
+
+.adventure-map--overview .adventure-map__artwork > img:first-child { object-fit:fill; }
 
 .adventure-map__back {
   position: absolute;
@@ -847,6 +913,17 @@
   color: transparent;
   cursor: pointer;
 }
+
+.adventure-map__back img { display:block; width:100%; height:100%; object-fit:contain; }
+.adventure-map__title-banner { position:absolute; z-index:3; top:.4%; left:27.4%; width:45%; height:9.2%; object-fit:contain; pointer-events:none; }
+.adventure-map--overview .adventure-map__mission-card { position:absolute; z-index:3; top:1.1%; left:74%; display:flex; width:24%; height:8.1%; align-items:center; gap:4px; padding:4px 5px; overflow:hidden; border:1px solid #d5ebf8; border-radius:12px; background:linear-gradient(145deg,#fff,#e8f6ff); box-shadow:0 3px 0 #add5ec,0 5px 10px #14527724; color:#164a79; cursor:pointer; text-align:left; }
+.adventure-map__mission-icon { display:grid; width:16px; height:19px; flex:0 0 auto; place-items:center; border:1px solid #5aa9ea; border-radius:4px; background:#e3f4ff; color:#2381cf; font-size:11px; font-weight:900; }
+.adventure-map__mission-copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:2px; }
+.adventure-map__mission-copy strong { font-size:clamp(6px,1.55vw,9px); font-weight:950; line-height:1.1; white-space:nowrap; }
+.adventure-map__mission-copy small { color:#456d8e; font-size:clamp(5px,1.25vw,7px); line-height:1.15; }
+.adventure-map__mission-progress { display:block; width:100%; height:3px; overflow:hidden; border-radius:999px; background:#c1ddef; }
+.adventure-map__mission-progress i { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#4fc97b,#9cde69); }
+.adventure-map__mission-count { flex:0 0 auto; color:#205580; font-size:clamp(6px,1.4vw,8px); font-style:normal; font-weight:900; }
 
 .adventure-map__back svg { width: 54%; height: 54%; transform: rotate(180deg); }
 .adventure-map__back:focus-visible,
